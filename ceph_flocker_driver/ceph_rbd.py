@@ -118,7 +118,7 @@ class CephRBDBlockDeviceAPI(object):
         """
         maps = dict()
         showmapped_output = self._check_output(
-            [b"rbd", "-p", self._pool, b"showmapped"]).strip()
+            [b"rbd", b"showmapped"]).strip()
         if not len(showmapped_output):
             return maps
         u_showmapped_output = showmapped_output.decode("utf-8")
@@ -176,7 +176,7 @@ class CephRBDBlockDeviceAPI(object):
         all_images = rbd_inst.list(self._ioctx)
         if blockdevice_id in all_images:
             raise ImageExists(blockdevice_id)
-        rbd_inst.create(self._ioctx, _rbd_blockdevice_id(blockdevice_id), size)
+        rbd_inst.create(self._ioctx, _rbd_blockdevice_id(blockdevice_id), size, old_format=False, features=1)
         return BlockDeviceVolume(
             blockdevice_id=blockdevice_id, size=size, dataset_id=dataset_id)
 
@@ -221,7 +221,7 @@ class CephRBDBlockDeviceAPI(object):
             return
 
         self._check_output([
-            b"rbd", b"-p", self._pool, b"map", blockdevice_id])
+            b"rbd", b"map", blockdevice_id])
 
         rbd_image = rbd.Image(self._ioctx, _rbd_blockdevice_id(blockdevice_id))
         size = int(rbd_image.stat()["size"])
@@ -246,7 +246,7 @@ class CephRBDBlockDeviceAPI(object):
         self._check_exists(blockdevice_id)
         device_path = self.get_device_path(blockdevice_id).path
         self._check_output([
-            b"rbd", b"-p", self._pool, b"unmap", device_path])
+            b"rbd", b"unmap", device_path])
 
     def list_volumes(self):
         """
